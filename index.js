@@ -19,7 +19,7 @@ function toTitleCase(str)
 {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
-
+var dimension
 var color = "black"
 //['Gender', 'Gender Code', 'Single-Year Ages', 'Single-Year Ages Code', 'Cause of death', 'Cause of death Code', 'Race', 'Race Code', 'Place of Death', 'Place of Death Code', 'Deaths', 'Population', 'Crude Rate']
 
@@ -27,7 +27,7 @@ queue()
 .defer(d3.csv, "joined_expanded.csv")
 .await(ready);
 function ready(error, data){
-	console.log(data)
+	//console.log(data)
 
     //See the [crossfilter API](https://github.com/square/crossfilter/wiki/API-Reference) for reference.
     var ndx = crossfilter(data);
@@ -35,10 +35,14 @@ function ready(error, data){
 
 //console.log(ndx)
 	var rd = ndx.dimension(function(d){return d["Race"]})
- 	 rowChart(rd, 100, 600, 180,"Race",ndx)
+ 	 rowChart(rd, 100, 400, 180,"Race",ndx)
    	 
 	var gd = ndx.dimension(function(d){return d["Gender"]})
- 	  rowChart(gd, 800, 600, 180,"Gender",ndx)
+ 	  rowChart(gd, 800, 400, 180,"Gender",ndx)
+			
+		
+	dimension = ndx.dimension(function(d){return parseInt(d['Single-Year Ages Code'])})
+	barChart(dimension,300,1000,20,"Age", ndx)
 	
 	var cd = ndx.dimension(function(d){
 		var cause = d["Cause of death"]
@@ -54,7 +58,7 @@ function ready(error, data){
 			return "unintentional"
 		}
 	})
- 	rowChart(cd, 400, 600, 180,"Type",ndx)
+ 	rowChart(cd, 400, 400, 200,"Reason",ndx)
 	
 	var wd = ndx.dimension(function(d){
 		var cause = d["Cause of death"].toLowerCase()
@@ -66,7 +70,7 @@ function ready(error, data){
 			return "Other and unspecified firearm"
 		}
 	})
- 	  rowChart(wd, 100, 600, 180,"Weapon",ndx)
+ 	  rowChart(wd, 100, 400, 200,"Weapon",ndx)
 	
 		//	 //
 	 // var causeGroup = ndx.dimension(function(d){return d["Cause of death"]})
@@ -75,34 +79,27 @@ function ready(error, data){
 
 	
 	var pd = ndx.dimension(function(d){return d["Place of Death"]})
- 	  rowChart(pd, 100, 600, 180,"Place",ndx)
-			
+ 	  rowChart(pd, 100, 400, 220,"Place",ndx)
 		
-	var dimension = ndx.dimension(function(d){return parseInt(d['Single-Year Ages Code'])})
-	barChart(dimension,300,800,20,"Age", ndx)
-			
-    dc.dataCount(".dc-data-count")
-        .dimension(ndx)
-        .group(all)
-        .html({
-            some:"%filter-count selected out of <strong>%total-count</strong> gun deaths | <a href='javascript:dc.filterAll(); dc.renderAll();''>Reset All</a>",
-            all:"All  %total-count gun deaths in 2020."
-        })
-	
-	var table = dc.dataTable('.dc-data-table');
-	
-	table.dimension(dimension)
-	.columns(["Death","Age","Place","Cause of death"])
-	.sortBy(d => d["Single-Year Ages Code"])
-	.order(d3.ascending)
+	//
+	     dc.dataCount(".dc-data-count")
+	         .dimension(ndx)
+	         .group(all)
+	         .html({
+	             some:"%filter-count selected out of <strong>%total-count</strong> gun deaths | <a href='javascript:dc.filterAll(); dc.renderAll();''>Reset All</a>",
+	             all:"All %total-count gun deaths in 2020, not including legal interventions"
+	         })
+
 	
     dc.renderAll();
-	d3.select("#loader").remove();
 };
+function dimenison(){
+	console.log(dimension.bottom(Infinity))
+}
 
 function barChart(dimension,h, w, m, divName, ndx){
 	var group = dimension.group()
-  var div= d3.select("body").append("div").attr("id",divName)
+  var div= d3.select("#charts").append("div").attr("id",divName)
 	var filtersDiv = div.append("div").style("height","40px")
 	filtersDiv.append("div").html(divName)
 	filtersDiv.append("span").attr("class","filter").style("display","none")
@@ -118,19 +115,25 @@ function barChart(dimension,h, w, m, divName, ndx){
 	
 	chart.width(w)
 	        .height(h)
-	        .margins({top: 0, right: 20, bottom: 40, left: 40})
+	        .margins({top: 0, right: 20, bottom: 60, left: 40})
 	        .ordinalColors([color])
 	        .dimension(dimension)
 	        .group(group)
 	        .centerBar(true)			
 	        .gap(1)
+	    .elasticY(true)
+	
 	        .x(d3.scale.linear().domain([1,100]))
 	        .yAxis().ticks(4);
+			
+			
+	//console.log(dimension.bottom(Infinity))
+			
 }
 
 
 function rowChart(dimension, h, w, m,divName,ndx){
-   var div = d3.select("body").append("div").attr("id",divName)
+   var div = d3.select("#charts").append("div").attr("id",divName)
 
 
 	var filtersDiv = div.append("div").style("height","40px")
@@ -151,8 +154,8 @@ function rowChart(dimension, h, w, m,divName,ndx){
 	var groupLength = group.top(100).length
 		
 	chart.width(w)
-	    .height(groupLength*p+p*2)
-	    .margins({top: p, left: m, right: p, bottom: p})
+	    .height(groupLength*p+p*3)
+	    .margins({top: p, left: m, right: p, bottom: p*2})
 	    .group(group)
 	    .dimension(dimension)
 		.gap(1)
@@ -162,12 +165,12 @@ function rowChart(dimension, h, w, m,divName,ndx){
 	    .label(function (d) {
 	        return d.key;
 	    })
-		.labelOffsetX(-m+10)
+		.labelOffsetX(-m+2)
 		//.labelOffsetY(12)
 	    .title(function (d) {
 	        return d.value;
 	    })
-	    //.elasticX(true)
+	    .elasticX(true)
 	    .xAxis().ticks(4);
 	
 	
