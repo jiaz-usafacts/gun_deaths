@@ -282,7 +282,7 @@ function ready(error, data){
     row1.append("div").attr("id","Age")
 	row1.append("div").attr("id","Year")
 	
-	row2.append("div").attr("id","Cause")
+	row1.append("div").attr("id","Cause")
     row2.append("div").attr("id","Weapon")
 	
 	
