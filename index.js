@@ -21,10 +21,12 @@ function toTitleCase(str)
 }
 var dimension
 var color = "black"
-//['Gender', 'Gender Code', 'Single-Year Ages', 'Single-Year Ages Code', 'Cause of death', 'Cause of death Code', 'Race', 'Race Code', 'Place of Death', 'Place of Death Code', 'Deaths', 'Population', 'Crude Rate']
+
+var highlightColor = "red"
 
 queue()
-.defer(d3.csv, "joined_expanded.csv")
+//.defer(d3.csv, "joined_expanded.csv")
+.defer(d3.csv, "joined_years_expanded.csv")
 .await(ready);
 function ready(error, data){
 	//console.log(data)
@@ -34,72 +36,104 @@ function ready(error, data){
     var all = ndx.groupAll();
 
 //console.log(ndx)
+//Year,Single-Year Ages,Place of Death,Race,Cause of death,Deaths,Gender
+	
+	var row1 = d3.select("#charts").append("div").attr("class","row")
+    row1.append("div").attr("id","Cause",highlightColor)
+    row1.append("div").attr("id","Weapon")
+	
+	row1.append("div").attr("id","Year")
+	
+	var row2 = d3.select("#charts").append("div").attr("class","row")
+    row2.append("div").attr("id","Age")
+	
+ 	//d3.select("#charts").append("div").attr("id","causePie")
+    d3.select("#charts").append("div").attr("id","Race")
+    d3.select("#charts").append("div").attr("id","Gender")
+    d3.select("#charts").append("div").attr("id","Place")
+	
+	
+	var w = 200
+	
 	var rd = ndx.dimension(function(d){return d["Race"]})
- 	 rowChart(rd, 100, 400, 180,"Race",ndx)
-   	 
-	var gd = ndx.dimension(function(d){return d["Gender"]})
- 	  rowChart(gd, 800, 400, 180,"Gender",ndx)
-			
-		
-	dimension = ndx.dimension(function(d){return parseInt(d['Single-Year Ages Code'])})
-	barChart(dimension,300,1000,20,"Age", ndx)
-	
-	var cd = ndx.dimension(function(d){
-		var cause = d["Cause of death"]
-		if(cause.indexOf("Assault")>-1){
-			return "assault"
-		}else if(cause.indexOf("Intentional self-harm")>-1){
-			return "self-harm"
-		}else if(cause.indexOf("undetermined intent")>-1){
-			return "undetermined"
-		}else if(cause =="Legal intervention involving firearm discharge"){
-			return "police"
-		}else{
-			return "unintentional"
-		}
+ 	 rowChart(rd, 100,w+190,190,"Race",ndx)
+   	 	//
+	var gd = ndx.dimension(function(d){
+		var genderDict = {F:"Female",M:"Male"}
+		return genderDict[d["Gender"]]
 	})
- 	rowChart(cd, 400, 400, 200,"Reason",ndx)
-	
-	var wd = ndx.dimension(function(d){
-		var cause = d["Cause of death"].toLowerCase()
-		if(cause.indexOf("handgun")>-1){
-			return "Handgun"
-		}else if(cause.indexOf("rifle, shotgun and larger firearm discharge")>-1){
-			return "Rifle, shotgun and larger firearm"
-		}else if(cause.indexOf("other and unspecified firearm")>-1){
-			return "Other and unspecified firearm"
-		}
-	})
- 	  rowChart(wd, 100, 400, 200,"Weapon",ndx)
-	
-		//	 //
-	 // var causeGroup = ndx.dimension(function(d){return d["Cause of death"]})
-	 //  	  rowChart(causeGroup, 100, 600, 180,"chart3",ndx)
-	
-
-	
-	var pd = ndx.dimension(function(d){return d["Place of Death"]})
- 	  rowChart(pd, 100, 400, 220,"Place",ndx)
-		
+	 	  rowChart(gd,100,w+60,60,"Gender",ndx)
 	//
-	     dc.dataCount(".dc-data-count")
-	         .dimension(ndx)
-	         .group(all)
-	         .html({
-	             some:"%filter-count selected out of <strong>%total-count</strong> gun deaths | <a href='javascript:dc.filterAll(); dc.renderAll();''>Reset All</a>",
-	             all:"All %total-count gun deaths in 2020, not including legal interventions"
-	         })
+	dimension = ndx.dimension(function(d){return parseInt(d['Single-Year Ages'])})
+	barChart(dimension,200,1000,20,"Age", ndx,[0,100])
+	
+	dimension = ndx.dimension(function(d){return parseInt(d['Year'])})
+	barChart(dimension,140,400,20,"Year", ndx,[1999,2020])
+	
+	
+	 var cd = ndx.dimension(function(d){
+	 	var cause = d["Cause of death"]
+	 	if(cause.indexOf("Assault")>-1){
+	 		return "assault"
+	 	}else if(cause.indexOf("Intentional self-harm")>-1){
+	 		return "self-harm"
+	 	}else if(cause.indexOf("undetermined intent")>-1){
+	 		return "undetermined"
+	 	}else if(cause =="Legal intervention involving firearm discharge"){
+	 		return "police"
+	 	}else{
+	 		return "unintentional"
+	 	}
+	 })
+	 rowChart(cd, 400, w+80, 80,"Cause",ndx)
+	
+ // var causePie = new dc.pieChart('#causePie');
+//   	causePie.width(300)
+//   	.height(300)
+//   	.radius(140)
+//   	.dimension(cd)
+//   	.group(cd.group())
+//   	 .renderLabel(true)
+//          .transitionDuration(0)
+ 
+	
+	
+	 var wd = ndx.dimension(function(d){
+	 	var cause = d["Cause of death"].toLowerCase()
+	 	if(cause.indexOf("handgun")>-1){
+	 		return "Handgun"
+	 	}else if(cause.indexOf("rifle, shotgun and larger firearm discharge")>-1){
+	 		return "Rifle, shotgun and larger firearm"
+	 	}else if(cause.indexOf("other and unspecified firearm")>-1){
+	 		return "Other and unspecified firearm"
+	 	}
+	 })
+	  	  rowChart(wd, 100, 400, 200,"Weapon",ndx)
+	
+	// 	//	 //
+	//  // var causeGroup = ndx.dimension(function(d){return d["Cause of death"]})
+	//  //  	  rowChart(causeGroup, 100, 600, 180,"chart3",ndx)
+	//
+	//
+	//
+	 var pd = ndx.dimension(function(d){return d["Place of Death"]})
+	  	  rowChart(pd, 100, 400, 220,"Place",ndx)
+
+	      dc.dataCount(".dc-data-count")
+	          .dimension(ndx)
+	          .group(all)
+	          .html({
+	              some:"%filter-count selected out of <strong>%total-count</strong> gun deaths | <a href='javascript:dc.filterAll(); dc.renderAll();''>Reset All</a>",
+	              all:"All %total-count gun deaths 1999 - 2020, not including legal interventions"
+	          })
 
 	
     dc.renderAll();
 };
-function dimenison(){
-	console.log(dimension.bottom(Infinity))
-}
 
-function barChart(dimension,h, w, m, divName, ndx){
+function barChart(dimension,h, w, m, divName, ndx,domain){
 	var group = dimension.group()
-  var div= d3.select("#charts").append("div").attr("id",divName)
+  var div= d3.select("#"+divName)
 	var filtersDiv = div.append("div").style("height","40px")
 	filtersDiv.append("div").html(divName)
 	filtersDiv.append("span").attr("class","filter").style("display","none")
@@ -119,21 +153,20 @@ function barChart(dimension,h, w, m, divName, ndx){
 	        .ordinalColors([color])
 	        .dimension(dimension)
 	        .group(group)
-	        .centerBar(true)			
+	       // .centerBar(true)			
 	        .gap(1)
 	    .elasticY(true)
 	
-	        .x(d3.scale.linear().domain([1,100]))
+	        .x(d3.scale.linear().domain(domain))
 	        .yAxis().ticks(4);
 			
 			
-	//console.log(dimension.bottom(Infinity))
 			
 }
 
 
-function rowChart(dimension, h, w, m,divName,ndx){
-   var div = d3.select("#charts").append("div").attr("id",divName)
+function rowChart(dimension, h, w, m,divName,ndx,fillColor){
+   var div = d3.select("#"+divName)//.append("div").attr("id",divName)
 
 
 	var filtersDiv = div.append("div").style("height","40px")
@@ -161,7 +194,7 @@ function rowChart(dimension, h, w, m,divName,ndx){
 		.gap(1)
 		.data(function(zipcodeGroup){return group.top(100)})
 		.ordering(function(d){ return -d.value })
-	    .ordinalColors([color])
+	    .ordinalColors([fillColor])
 	    .label(function (d) {
 	        return d.key;
 	    })
