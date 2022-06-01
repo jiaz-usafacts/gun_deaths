@@ -22,7 +22,7 @@
 		.dc-data-count{
 			display:block;
 			margin-bottom:20px;
-			font-size:24px;
+			font-size:12px;
 		}
 		#count{
 			display:block;
@@ -31,6 +31,33 @@
 		    fill: #000;
 		    font-size: 12px;
 		    cursor: pointer;
+		}
+		#buttons{
+			font-style:italic;
+			width:500px;
+			height:500px;
+			vertical-align:top;
+			display:inline-block;
+			padding:20px;
+			position:absolute;
+			left:40px;
+			z-index:9;
+			
+		}
+		#box{
+			font-style:italic;
+			display:inline-block;
+		}
+		#moreText{
+/*			border:1px solid black;
+*/			padding:20px;
+			font-size:24px;
+			line-height:150%;
+			color:magenta;
+		}
+		.prompt{
+			padding:5px;
+			cursor:pointer;
 		}
     </style>
 	<script language="javascript" type="text/javascript">
@@ -50,6 +77,10 @@
 </head>
 
 <body>
+<div class="row" id="top">
+<div class="row" id="box"></div>
+<div class="row" id="buttons"></div>
+</div>
 	<div class="row">
 	<div class="dc-data-count" id="count">
 	            <span class="filter-count"></span> selected out of <span class="total-count"></span> deaths | <a
