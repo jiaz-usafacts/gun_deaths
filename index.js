@@ -20,9 +20,9 @@ function toTitleCase(str)
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 var dimension
-var color = "black"
+var color = "#333"
 
-var highlightColor = "red"
+var highlightColor = "magenta"
 
 queue()
 //.defer(d3.csv, "joined_expanded.csv")
@@ -39,7 +39,7 @@ function ready(error, data){
 //Year,Single-Year Ages,Place of Death,Race,Cause of death,Deaths,Gender
 	
 	var row1 = d3.select("#charts").append("div").attr("class","row")
-    row1.append("div").attr("id","Cause",highlightColor)
+    row1.append("div").attr("id","Cause")
     row1.append("div").attr("id","Weapon")
 	
 	row1.append("div").attr("id","Year")
@@ -56,13 +56,13 @@ function ready(error, data){
 	var w = 200
 	
 	var rd = ndx.dimension(function(d){return d["Race"]})
- 	 rowChart(rd, 100,w+190,190,"Race",ndx)
+ 	 rowChart(rd, 100,w+190,190,"Race",ndx,color)
    	 	//
 	var gd = ndx.dimension(function(d){
 		var genderDict = {F:"Female",M:"Male"}
 		return genderDict[d["Gender"]]
 	})
-	 	  rowChart(gd,100,w+60,60,"Gender",ndx)
+	 	  rowChart(gd,100,w+60,60,"Gender",ndx,color)
 	//
 	dimension = ndx.dimension(function(d){return parseInt(d['Single-Year Ages'])})
 	barChart(dimension,200,1000,20,"Age", ndx,[0,100])
@@ -85,7 +85,7 @@ function ready(error, data){
 	 		return "unintentional"
 	 	}
 	 })
-	 rowChart(cd, 400, w+80, 80,"Cause",ndx)
+	 rowChart(cd, 400, w+80, 80,"Cause",ndx,highlightColor)
 	
  // var causePie = new dc.pieChart('#causePie');
 //   	causePie.width(300)
@@ -108,7 +108,7 @@ function ready(error, data){
 	 		return "Other and unspecified firearm"
 	 	}
 	 })
-	  	  rowChart(wd, 100, 400, 200,"Weapon",ndx)
+	  	  rowChart(wd, 100, 400, 200,"Weapon",ndx,color)
 	
 	// 	//	 //
 	//  // var causeGroup = ndx.dimension(function(d){return d["Cause of death"]})
@@ -117,7 +117,7 @@ function ready(error, data){
 	//
 	//
 	 var pd = ndx.dimension(function(d){return d["Place of Death"]})
-	  	  rowChart(pd, 100, 400, 220,"Place",ndx)
+	  	  rowChart(pd, 100, 400, 220,"Place",ndx,color)
 
 	      dc.dataCount(".dc-data-count")
 	          .dimension(ndx)
