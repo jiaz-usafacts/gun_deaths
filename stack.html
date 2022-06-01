@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	  <meta charset="UTF-8">
+    <title>gun deaths 2020 	*Does not include legal intervention
+</title>
+
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/dc.css"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+
+    <style>
+		body{
+		    color: #000;
+			margin:20px;
+			font-size:18px;
+		}
+		
+		.dc-data-count{
+			display:block;
+			margin-bottom:20px;
+			font-size:12px;
+		}
+		#count{
+			display:block;
+		}
+		.dc-chart g.row text {
+		    fill: #000;
+		    font-size: 12px;
+		    cursor: pointer;
+		}
+		#buttons{
+			font-style:italic;
+			width:500px;
+			height:500px;
+			vertical-align:top;
+			display:inline-block;
+			padding:20px;
+			position:absolute;
+			left:40px;
+			z-index:9;
+			
+		}
+		#box{
+			font-style:italic;
+			display:inline-block;
+		}
+		#moreText{
+/*			border:1px solid black;
+*/			padding:20px;
+			font-size:24px;
+			line-height:150%;
+			color:magenta;
+		}
+		.prompt{
+			padding:5px;
+			cursor:pointer;
+		}
+    </style>
+	<script language="javascript" type="text/javascript">
+	function showHide(shID) {
+	   if (document.getElementById(shID)) {
+	      if (document.getElementById(shID+'-show').style.display != 'none') {
+	         document.getElementById(shID+'-show').style.display = 'none';
+	         document.getElementById(shID).style.display = 'block';
+	      }
+	      else {
+	         document.getElementById(shID+'-show').style.display = 'inline';
+	         document.getElementById(shID).style.display = 'none';
+	      }
+	   }
+	}
+	</script>
+</head>
+
+<body>
+</div>
+	<div class="row">
+	<div class="dc-data-count" id="count">
+	            <span class="filter-count"></span> selected out of <span class="total-count"></span> deaths | <a
+	                href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
+	    </div>
+</div>
+<div class="row" id="charts"></div>
+
+</div>
+
+<script type="text/javascript" src="js/d3.js"></script>
+<script type="text/javascript" src="js/crossfilter.js"></script>
+<script type="text/javascript" src="js/dc.js"></script>
+<script type="text/javascript" src="js/colorbrewer.js"></script>
+<script type="text/javascript" src="js/queue.v1.min.js"></script>
+
+<script type="text/javascript" src="stack.js"></script>
+
+
+</body>
+</html>
