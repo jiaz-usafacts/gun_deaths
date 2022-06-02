@@ -29,11 +29,11 @@ var allYearsByCat
 function ready(data){
 	//console.log(data)
 	allYearsByCat = catData(data)
-	var formattedYears = drawYearData(data)
-	drawStackedChart(formattedYears[0],formattedYears[1],formattedYears[2],"#chart1","2020",600,300)
+	var formattedYears = drawGroupData(data,"Year")
+	drawStackedChart(formattedYears[0],formattedYears[1],formattedYears[2],"#chart1","2020",600,300,"Year")
     
-	var formattedAges = drawAgeData(data,"Single-Year Ages")	
-	drawStackedChart(formattedAges[0],formattedAges[1],formattedAges[2],"#chart2","20 years",1000,300)
+	var formattedAges = drawGroupData(data,"Single-Year Ages")	
+	drawStackedChart(formattedAges[0],formattedAges[1],formattedAges[2],"#chart2","20 years",1000,300,"Age")
 	
 };
 
@@ -48,7 +48,7 @@ function ready(data){
 
 //accidents
 
-function drawAgeData(data,column){
+function drawGroupData(data,column){
 	var groups = {}
 	data.forEach(function(d){
 		if(Object.keys(groups).indexOf(d[column])==-1){
@@ -133,7 +133,9 @@ function drawYearData(data){
 	 return [years, yearsCatCount,formattedArray]
  }
  
- function drawStackedChart(years,yearsCatCount,formattedArray,divName,groupKey,w,h){
+ 
+ 
+ function drawStackedChart(years,yearsCatCount,formattedArray,divName,groupKey,w,h,label){
    var subgroups = Object.keys(yearsCatCount[groupKey])
 	
  	var groups = Object.keys(yearsCatCount)
@@ -196,6 +198,8 @@ var stackedData = d3.stack()
 	     .style("border-width", "1px")
 	     .style("padding", "10px")
 
+svg.append("text").text(label).attr("x",w/2+p).attr("y",h+p+30).style("font-size","12px")
+svg.append("text").text("Deaths").attr("x",p).attr("y",p-5).style("font-size","12px").attr("text-anchor","end")
 svg.append("g")
     .selectAll("g")
     .data(stackedData)
@@ -292,4 +296,3 @@ function buildDict(key, dict,data){
 	return dict
 }
 
-d3.selectAll("#version").text(dc.version);
