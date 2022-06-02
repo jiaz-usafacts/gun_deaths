@@ -110,6 +110,9 @@ function catData(data){
 	})
 	return formatted
 }
+function drawMassShootings(data){
+	
+}
 
 function drawYearData(data){
     
@@ -209,7 +212,7 @@ var stackedData = d3.stack()
 	     .style("border", "solid")
 	     .style("border-width", "1px")
 	     .style("padding", "10px")
-
+	
 svg.append("text").text(label).attr("x",w/2+p).attr("y",h+p+30).style("font-size","12px")
 svg.append("text").text("Deaths").attr("x",p).attr("y",p-5).style("font-size","12px").attr("text-anchor","end")
 svg.append("g")
@@ -297,6 +300,12 @@ svg.append("g")
       .style("top", y + "px")
        })
        .on("mouseleave", function(e,d){tooltip.style("opacity", 0) })
+
+   	svg.append("text").text("%").attr("x",w-p).attr("y",p)
+   	.on("click",function(e,d){
+		
+   	})
+
 }
 
 function buildDict(key, dict,data){
