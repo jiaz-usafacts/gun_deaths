@@ -155,7 +155,8 @@ function drawYearData(data){
 
 var color = d3.scaleOrdinal()
     .domain(subgroups)
-	 .range(["#00347B","#5CB79A","#00906E","#3DA8DF","#1571A9", "#E62790","#949494","#949494"])
+	 .range(["#00347B","#00906E","#5CB79A","#D99522",
+"#E5BD3F", "#E62790","#949494","#949494"])
 	 
  	var max =d3.max(Object.keys(years),function(d){
  		return years[d].length
@@ -170,12 +171,135 @@ var color = d3.scaleOrdinal()
 	   .domain([0,max])
 	   .range([0,w]);
 	   
+	   var xp = d3.scaleLinear()
+	   //.domain([0,100])
+	   .range([0,w])
+	   
+	   var percentXScale = d3.scaleLinear().domain([0,100]).range([0,w])
+	   var percentXAxis = d3.axisBottom().scale(percentXScale) .tickFormat(function(d, i){return d+"%" })
+	   
+	   
+	   var p = 45
+	   var svg = d3.select(divName).append("svg").attr("width",w+p*8).attr("height",h+p*2)
+	   
+      	svg.append("text").text("%").attr("x",w-p).attr("y",15)
+		.style("cursor","pointer")
+		.attr("class","toggle")
+	   .attr("fill","#aaa")
+      	.on("click",function(e,d){
+			d3.selectAll("#axisBottom").remove()
+			svg.append("g").attr("id","axisBottom").call(percentXAxis)
+       .attr("transform", "translate("+p+"," + (h+p) + ")")
+			
+			svg.selectAll(".mass").each(function(d,i){
+				
+	 		   if(mass_shootings[d]!=undefined){
+	 			   	var deaths = mass_shootings[d]["deaths"]
+	 				var incidents = mass_shootings[d]["incidents"]
+	 			   var allDeaths = years[d].length
+	 			   var percent = Math.round(deaths/allDeaths*10000)/100
+	 			   if(i==0){
+	 		   		var text ="Including "+percent+"%"+" mass shooting deaths"//" in "+incidents+" incidents"
+	 			   }else{
+	 			   var text = percent+"%"
+	 			   }
+	 		   }else{
+	 		   	var text = "0%"
+	 		   }
+				
+				d3.select(this).transition()
+	   		 	.attr("x",w+5).text(text)
+			})
+			d3.selectAll(".toggle").attr("fill","#aaa")
+			d3.select(this).attr("fill","#000")
+			d3.selectAll("rect").each(function(d){
+				var totalPerYear = years[d.data.group].length
+				xp.domain([0,totalPerYear])
+				d3.select(this) 
+				.transition()
+			        .attr("x", function(d) { 
+						if(isNaN(d[1])==false){
+						return xp(d[0]); }
+					})
+			        .attr("width", function(d) { 
+						if(isNaN(d[1])==false){
+							if(xp(d[1]) - xp(d[0])<2){
+								return 2
+							}
+							return xp(d[1]) - xp(d[0]); 
+						}
+					})
+			})
+		
+      	})
+      	svg.append("text").text("#").attr("x",w-p+20).attr("y",15)
+		.attr("class","toggle")
+	   .attr("fill","#000")
+		.style("cursor","pointer")
+      	.on("click",function(e,d){
+			svg.selectAll(".mass").each(function(d,i){
+				
+ 	 		   if(mass_shootings[d]!=undefined){
+ 	 			   	var deaths = mass_shootings[d]["deaths"]
+ 	 				var incidents = mass_shootings[d]["incidents"]
+ 	 			   var allDeaths = years[d].length
+ 	 			   var percent = Math.round(deaths/allDeaths*10000)/100
+ 	 			   if(i==0){
+ 	 		   		var text ="Including "+deaths+" mass shooting deaths"//" in "+incidents+" incidents"
+ 	 			   }else{
+ 	 			   var text = deaths
+ 	 			   }
+ 	 		   }else{
+ 	 		   	var text = "0 deaths"
+ 	 		   }
+				
+				d3.select(this).transition().text(text)
+	   		 .attr("x",function(d){return x(years[d].length)+5})
+				
+			})
+			
+			d3.selectAll("#axisBottom").remove()
+			svg.append("g").attr("id","axisBottom")
+	        .call(d3.axisBottom(x)
+	        .tickFormat(function(d, i){ 
+	 		   if(label=="Age"){
+	 			   var years = parseInt(d.replace(" years",""))
+	 			   if(years%5==0){
+	 			   	return years
+	 			   }
+	 		   }else{
+	 		   	return d
+	 		   }
+	 	   }))
+       .attr("transform", "translate("+p+"," + (h+p) + ")")
+			
+			d3.selectAll(".toggle").attr("fill","#aaa")
+			d3.select(this).attr("fill","#000")
+			
+			d3.selectAll("rect").each(function(d){
+				var totalPerYear = years[d.data.group].length
+				d3.select(this) 
+				.transition()
+			        .attr("x", function(d) { 
+						if(isNaN(d[1])==false){
+						return x(d[0]); }
+					})
+			        .attr("width", function(d) { 
+						if(isNaN(d[1])==false){
+							if(x(d[1]) - x(d[0])<2){
+								return 2
+							}
+							return x(d[1]) - x(d[0]); 
+						}
+					})
+			})
+      	})
+	   
+	   var massShootinScale = d3.scaleLinear().domain([5,117]).range([.1,1])
 var stackedData = d3.stack()
     .keys(subgroups)
     (formattedArray)
 	   
-	   var p = 45
-	   var svg = d3.select(divName).append("svg").attr("width",w+p*8).attr("height",h+p*2)
      svg.append("g")
        .call(d3.axisLeft(y))
        .attr("transform", "translate("+p+"," + p + ")")
@@ -185,22 +309,35 @@ var stackedData = d3.stack()
 	   .data(groups)
 	   .enter()
 	   .append("text")
-	   .text(function(d){
+		.attr("class","mass")
+	   .text(function(d,i){
 		   if(mass_shootings[d]!=undefined){
 			   	var deaths = mass_shootings[d]["deaths"]
 				var incidents = mass_shootings[d]["incidents"]
 			   var allDeaths = years[d].length
 			   var percent = Math.round(deaths/allDeaths*10000)/100
+			   if(i==0){
+		   		return "Including "+deaths+"("+percent+"%)"+" mass shooting deaths"//" in "+incidents+" incidents"
+			   }else{
+			   	return deaths+" deaths ("+percent+"%)"
+			   }
+		   }else{
+		   	return "0 deaths"
 		   }
-		   return "Including "+deaths+"("+percent+"%)"+" mass shooting deaths"//" in "+incidents+" incidents"
 	   })
+	   // .attr("opacity",function(d){
+   // 		   if(mass_shootings[d]!=undefined){
+   // 			   	var deaths = mass_shootings[d]["deaths"]
+   // 			   return massShootinScale(deaths)
+   // 		   }
+   // 	   })
 	   .attr("x",function(d){return x(years[d].length)+5})
 	   .attr("y",function(d){return y(d)})
        .attr("transform", "translate("+p+"," + (p+15) + ")")
 	   .style("font-size","12px")
 	   .style("font-style","italic")
 	   
-    svg.append("g")
+    svg.append("g").attr("id","axisBottom")
        .attr("transform", "translate("+p+"," + (h+p) + ")")
        .call(d3.axisBottom(x)
        .tickFormat(function(d, i){ 
@@ -247,6 +384,7 @@ svg.append("g")
 	   })
 	   .attr("x", function(d) { return x(d.data.group); })
         .attr("y", function(d) { 
+			//console.log(d)
 			if(isNaN(d[1])==false){
 				var subGroupName= d3.select(this.parentNode).datum().key
 				if(subGroupName=="undetermined_intent"){
@@ -315,11 +453,6 @@ svg.append("g")
       .style("top", y + "px")
        })
        .on("mouseleave", function(e,d){tooltip.style("opacity", 0) })
-
-   	svg.append("text").text("%").attr("x",w-p).attr("y",p)
-   	.on("click",function(e,d){
-		
-   	})
 
 }
 
