@@ -182,7 +182,7 @@ var color = d3.scaleOrdinal()
 	   var p = 45
 	   var svg = d3.select(divName).append("svg").attr("width",w+p*8).attr("height",h+p*2)
 	   
-      	svg.append("text").text("%").attr("x",w-p).attr("y",15)
+      	svg.append("text").text("%").attr("x",p).attr("y",15)
 		.style("cursor","pointer")
 		.attr("class","toggle")
 	   .attr("fill","#aaa")
@@ -232,7 +232,7 @@ var color = d3.scaleOrdinal()
 			})
 		
       	})
-      	svg.append("text").text("#").attr("x",w-p+20).attr("y",15)
+      	svg.append("text").text("#").attr("x",p/2).attr("y",15)
 		.attr("class","toggle")
 	   .attr("fill","#000")
 		.style("cursor","pointer")
@@ -250,7 +250,7 @@ var color = d3.scaleOrdinal()
  	 			   var text = deaths
  	 			   }
  	 		   }else{
- 	 		   	var text = "0 deaths"
+ 	 		   	var text = "0"
  	 		   }
 				
 				d3.select(this).transition().text(text)
@@ -317,12 +317,12 @@ var stackedData = d3.stack()
 			   var allDeaths = years[d].length
 			   var percent = Math.round(deaths/allDeaths*10000)/100
 			   if(i==0){
-		   		return "Including "+deaths+"("+percent+"%)"+" mass shooting deaths"//" in "+incidents+" incidents"
+		   		return "Including "+deaths+" mass shooting deaths"//" in "+incidents+" incidents"
 			   }else{
-			   	return deaths+" deaths ("+percent+"%)"
+			   	return deaths
 			   }
 		   }else{
-		   	return "0 deaths"
+		   	return "0"
 		   }
 	   })
 	   // .attr("opacity",function(d){
