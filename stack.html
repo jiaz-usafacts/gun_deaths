@@ -61,31 +61,18 @@
 		}
     </style>
 	<script language="javascript" type="text/javascript">
-	function showHide(shID) {
-	   if (document.getElementById(shID)) {
-	      if (document.getElementById(shID+'-show').style.display != 'none') {
-	         document.getElementById(shID+'-show').style.display = 'none';
-	         document.getElementById(shID).style.display = 'block';
-	      }
-	      else {
-	         document.getElementById(shID+'-show').style.display = 'inline';
-	         document.getElementById(shID).style.display = 'none';
-	      }
-	   }
-	}
+	
 	</script>
 </head>
 
 <body>
+<div class="row">Data between 1999 - 2020 </div>
+<div class="row" id="chart1">
+	<p>By Year</p>
 </div>
-	<div class="row">
-	<div class="dc-data-count" id="count">
-	            <span class="filter-count"></span> selected out of <span class="total-count"></span> deaths | <a
-	                href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
-	    </div>
-</div>
-<div class="row" id="charts"></div>
 
+<div class="row" id="chart2">
+	<p>By Age</p>
 </div>
 
 <script type="text/javascript" src="js/d3.js"></script>
@@ -94,6 +81,10 @@
 <script type="text/javascript" src="js/colorbrewer.js"></script>
 <script type="text/javascript" src="js/queue.v1.min.js"></script>
 
+<script src="http://dc-js.github.io/dc.js/js/d3.js"></script>
+<script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+<script src="http://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+<script src="http://dc-js.github.io/dc.js/js/dc.js"></script>
 <script type="text/javascript" src="stack.js"></script>
 
 

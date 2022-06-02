@@ -21,68 +21,21 @@ var color = "#000"
 
 var highlightColor = "magenta"
 
-queue()
-//.defer(d3.csv, "joined_expanded.csv")
-.defer(d3.csv, "joined_years_legal_expanded.csv")
-.await(ready);
-
-function ready(error, data){
+Promise.all([d3.csv("joined_years_legal_expanded.csv")])
+.then(function(data){
+	ready(data[0])
+})
+var allYearsByCat
+function ready(data){
 	//console.log(data)
-
-    //See the [crossfilter API](https://github.com/square/crossfilter/wiki/API-Reference) for reference.
-    var ndx = crossfilter(data);
-    var all = ndx.groupAll();
-
-//console.log(ndx)
-//Year,Single-Year Ages,Place of Death,Race,Cause of death,Deaths,Gender
+	allYearsByCat = catData(data)
+	var formattedYears = drawYearData(data)
+	drawStackedChart(formattedYears[0],formattedYears[1],formattedYears[2],"#chart1","2020",600,300)
+    
+	var formattedAges = drawAgeData(data,"Single-Year Ages")	
+	drawStackedChart(formattedAges[0],formattedAges[1],formattedAges[2],"#chart2","20 years",1000,300)
 	
-	var row1 = d3.select("#charts").append("div").attr("class","row")	
-	
-    row1.append("div").attr("id","Age")
-	dimensions["Age"] = ndx.dimension(function(d){return parseInt(d['Single-Year Ages'])})
-	
-	
-		barChart(120,800,20,"Age", ndx,[0,100])
-			  
-    dc.renderAll();
 };
-
-function barChart(h, w, m, divName, ndx,domain){
-	var dimension = dimensions[divName]
-	var group = dimension.group()
-  var div= d3.select("#"+divName)
-	var filtersDiv = div.append("div").style("height","40px")
-	filtersDiv.append("div").html(divName)
-	filtersDiv.append("span").attr("class","filter").style("display","none")
-
-	filtersDiv.append("a").attr("class","reset").html(" | reset ").style("display","none")
-	.on("click",function(){
-		chart.filterAll()
-		dc.redrawAll()
-	})
-	
-	var chart = dc.barChart("#"+divName)
-	var bw = 8
-	var w = bw*(domain[1]-domain[0])+bw*6
-	
-	chart.width(w)
-	        .height(h)
-	        .margins({top: 0, right: bw*2, bottom: 60, left: bw*4})
-	        .ordinalColors([color])
-	        .dimension(dimension)
-	        .group(group)
-	        //.centerBar(true)			
-	        .gap(1)
-	    	.elasticY(true)
-	        .x(d3.scale.linear().domain(domain))
-	        .yAxis().ticks(4);
-			
-		    chart.on('filtered', function() {
-				drawStackedChart(ndx)
-			});
-			
-			charts[divName]=chart			
-}
 
 //suicide
 //police
@@ -93,25 +46,69 @@ function barChart(h, w, m, divName, ndx,domain){
 //assault, at home, men,
 //assault, at home, women
 
-
 //accidents
 
-function drawStackedChart(ndx){
-	 var data = dimensions["Age"].top(Infinity)
+function drawAgeData(data,column){
+	var groups = {}
+	data.forEach(function(d){
+		if(Object.keys(groups).indexOf(d[column])==-1){
+			groups[d[column]]=[]
+			groups[d[column]].push(d)
+		}else{
+			groups[d[column]].push(d)
+		}
+	})
+
+	var groupCatCount = {}
+	
+	for(var y in groups){
+		var groupData = groups[y]
+		groupCatCount[y]=catData(groupData)
+	}
+	var formattedArray = []
+	for(var z in groupCatCount){
+		var entry = groupCatCount[z]
+		entry["group"]=z
+		formattedArray.push(entry)
+	}
+	 return [groups, groupCatCount,formattedArray]
+}
+
+function catData(data){
+	var formatted = {}
+	data.forEach(function(d){
+		if(d["Cause of death"].toLowerCase().indexOf("intentional self-harm")>-1){
+					buildDict("intentional_self-harm", formatted,d)
+		}else if(d["Cause of death"].toLowerCase().indexOf("legal intervention")>-1){
+					buildDict("legal_intervention", formatted,d)
+		}else if(d["Cause of death"].toLowerCase().indexOf("undetermined intent")>-1){
+					buildDict("undetermined_intent", formatted,d)
+		}else if(d["Cause of death"].toLowerCase().toLowerCase().indexOf("assault")>-1){
+			if(d["Gender"]=="M"){
+				if(d["Place of Death"]=="Decedent's home"){
+					buildDict("assault_male_at_home", formatted,d)
+				}else{
+					buildDict("assault_male_not_at_home", formatted,d)
+				}
+			}else{
+				if(d["Place of Death"]=="Decedent's home"){
+					buildDict("assault_female_at_home",formatted,d)
+					
+				}else{
+					buildDict("assault_female_not_at_home", formatted,d)
+					
+				}
+			}
+		}else{
+			buildDict("unintentional", formatted,d)
+		}
+	})
+	return formatted
+}
+
+function drawYearData(data){
     
 	var years = {}
-	var mapped = {
-		suicide:[],
-		accidents:[],
-		police:[],
-		assault_home_f:[],
-		assault_home_m:[],
-		assault_out_f:[],
-		assault_out_m:[],
-		undetermined:[]
-		
-	}
-	
 	data.forEach(function(d){
 		if(Object.keys(years).indexOf(d.Year)==-1){
 			years[d.Year]=[]
@@ -124,64 +121,170 @@ function drawStackedChart(ndx){
 	var yearsCatCount = {}
 	
 	for(var y in years){
-		console.log(y)
 		var yearData = years[y]
-		console.log(yearData)
-		
-		yearsCatCount[y]={}
-		yearData.forEach(function(d){
-			if(d["Cause of death"].indexOf("Intentional self-harm")>-1){
-				if(Object.keys(yearsCatCount[y]).indexOf("suicide")==-1){
-					yearsCatCount[y]["suicide"]=[]
-					yearsCatCount[y]["suicide"].push(d)
-				}else{
-					yearsCatCount[y]["suicide"].push(d)
-				}
-			}else if(d["Cause of death"].indexOf("Legal intervention")>-1){
-				if(Object.keys(yearsCatCount[y]).indexOf("police")==-1){
-					yearsCatCount[y]["police"]=[]
-					yearsCatCount[y]["police"].push(d)
-				}else{
-					yearsCatCount[y]["police"].push(d)
-				}
-			}else if(d["Cause of death"].indexOf("undetermined intent")>-1){
-						
-						buildDict("undetermined", yearsCatCount[y],d)
-				
-			}else if(d["Cause of death"].toLowerCase().indexOf("assault")>-1){
-				if(d["Gender"]=="M"){
-					if(d["Place of Death"]=="Decedent's home"){
-						buildDict("assault_m_home", yearsCatCount[y],d)
-					}else{
-						buildDict("assault_m_notHome", yearsCatCount[y],d)
-					}
-				}else{
-					if(d["Place of Death"]=="Decedent's home"){
-						buildDict("assault_f_home", yearsCatCount[y],d)
-						
-					}else{
-						buildDict("assault_f_notHome", yearsCatCount[y],d)
-						
-					}
-				}
-			}else{
-				buildDict("unintentional", yearsCatCount[y],d)
-			}
-			
-		})
+		yearsCatCount[y]=catData(yearData)
 	}
+	var formattedArray = []
+	for(var z in yearsCatCount){
+		var entry = yearsCatCount[z]
+		entry["group"]=z
+		formattedArray.push(entry)
+	}
+	 return [years, yearsCatCount,formattedArray]
+ }
+ 
+ function drawStackedChart(years,yearsCatCount,formattedArray,divName,groupKey,w,h){
+   var subgroups = Object.keys(yearsCatCount[groupKey])
 	
-	
-	console.log(years)
-	console.log(yearsCatCount)
+ 	var groups = Object.keys(yearsCatCount)
+	 
+	 
+	  var subgroups = ['intentional_self-harm','assault_male_not_at_home', 
+	 'assault_male_at_home', 'assault_female_not_at_home','assault_female_at_home',
+	   'legal_intervention','unintentional','undetermined_intent']
+
+var color = d3.scaleOrdinal()
+    .domain(subgroups)
+    .range(["#000",
+"#45b0cf",
+"#46b6a3",
+"#55a470",
+"#4bb956",
+"#db76a8",
+"#888",
+"#aaa"])
+
+ 	var max =d3.max(Object.keys(years),function(d){
+ 		return years[d].length
+ 	})
+	 
+   var x = d3.scaleBand()
+       .domain(groups)
+       .range([0, w])
+       .paddingInner([0.1])
+  
+	 var y = d3.scaleLinear()
+	   .domain([0,max])
+	   .range([h, 0]);
+	   
+var stackedData = d3.stack()
+    .keys(subgroups)
+    (formattedArray)
+	   var p = 40
+	   var svg = d3.select(divName).append("svg").attr("width",w+p*7).attr("height",h+p*2)
+     svg.append("g")
+       .call(d3.axisLeft(y))
+       .attr("transform", "translate("+p+"," + p + ")")
+	   
+    svg.append("g")
+       .attr("transform", "translate("+p+"," + (h+p) + ")")
+       .call(d3.axisBottom(x)
+       .tickFormat(function(d, i){ 
+		   var years = parseInt(d.replace(" years",""))
+		   if(years%5==0){
+		   	return years
+		   }
+	   })
+   	);
+	   
+	  var tooltip = d3.select("body")
+	     .append("div")
+	     .style("opacity", 0)
+	     .attr("class", "tooltip")
+	     .style("background-color", "white")
+	     .style("border", "solid")
+	     .style("border-width", "1px")
+	     .style("padding", "10px")
+
+svg.append("g")
+    .selectAll("g")
+    .data(stackedData)
+    .enter().append("g")
+      .attr("fill", function(d) { return color(d.key); })
+	   .attr("key",function(d){return d.key})
+      .selectAll("rect")
+      .data(function(d) { return d; })
+      .enter().append("text")
+	   .text(function(d,i){
+		   if(d.data.group=="2020"){
+			   var subGroup = d3.select(this.parentNode).datum().key
+			  var subGroupCount = allYearsByCat[subGroup]
+			   return "Total "+subGroup.split("_").join(" ")+": "+numberWithCommas(subGroupCount)
+		   }
+	   })
+	   .attr("x", function(d) { return x(d.data.group); })
+        .attr("y", function(d) { 
+			if(isNaN(d[1])==false){
+				var subGroupName= d3.select(this.parentNode).datum().key
+				if(subGroupName=="undetermined_intent"){
+					return y(d[1])-15
+				}else if(subGroupName=="unintentional"){
+					return y(d[1])-10
+				}else if(subGroupName=="legal_intervention"){
+					return y(d[1])-5
+				}
+				return y(d[1]); 
+			}
+		})
+	   .style("font-size","11px")
+       .attr("transform", "translate("+p*2+"," + (p+15) + ")")
+	   
+svg.append("g")
+    .selectAll("g")
+    .data(stackedData)
+    .enter().append("g")
+      .attr("fill", function(d) { return color(d.key); })
+      .selectAll("rect")
+      // enter a second time = loop subgroup per subgroup to add all rectangles
+      .data(function(d) { return d; })
+      .enter().append("rect")
+        .attr("x", function(d) { return x(d.data.group); })
+        .attr("y", function(d) { 
+			if(isNaN(d[1])==false){
+			return y(d[1]); }
+		})
+        .attr("height", function(d) { 
+			if(isNaN(d[1])==false){
+				if(y(d[0]) - y(d[1])<2){
+					return 2
+				}
+				return y(d[0]) - y(d[1]); 
+			}
+		})
+        .attr("width",x.bandwidth())
+	   .attr("stroke","#fff")
+	   .attr("cursor","pointer")
+       .attr("transform", "translate("+p+"," + p + ")")
+		.on("mouseover", function(e,d){
+			var group = d.data.group
+			var groupValue = years[group].length
+			var subgroupName = d3.select(this.parentNode).datum().key
+   	     	var subgroupValue = d.data[subgroupName];
+			var percentValue = Math.round(subgroupValue/groupValue*10000)/100
+			
+	     tooltip
+	         .html("<strong>" + subgroupName.split("_").join(" ") + "</strong><br>" 
+				+ numberWithCommas(subgroupValue)+" Deaths<br>"
+				+ percentValue+"% of all Deaths in "+group)
+	         .style("opacity", 1)
+		})      //
+       .on("mousemove", function(e,d){
+		   var x = event.clientX+20;     // Get the horizontal coordinate
+		   var y = event.clientY; 
+		   
+		   tooltip
+      .style("left", x + "px") 
+      .style("top", y + "px")
+       })
+       .on("mouseleave", function(e,d){tooltip.style("opacity", 0) })
 }
 
 function buildDict(key, dict,data){
 	if(Object.keys(dict).indexOf(key)==-1){
-		dict[key]=[]
-		dict[key].push(data)
+		dict[key]=0
+		dict[key]+=1
 	}else{
-		dict[key].push(data)
+		dict[key]+=1
 	}
 	return dict
 }
