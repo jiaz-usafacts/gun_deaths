@@ -155,8 +155,14 @@ function drawYearData(data){
 
 var color = d3.scaleOrdinal()
     .domain(subgroups)
-    .range(["#000","#e1b342","#e5a638","#45b0cf","#46b6a3","#cb5a4c","#888","#aaa"])
-
+	 .range(
+["#00347B",
+"#5CB79A","#00906E",
+"#3DA8DF","#1571A9",
+	 "#E62790",
+"#949494","#949494"]
+	 )
+	 
  	var max =d3.max(Object.keys(years),function(d){
  		return years[d].length
  	})
