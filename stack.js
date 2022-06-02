@@ -5,7 +5,7 @@ var charts = {}
 var dimensions = {}
 var texts = {}
 var filters = {}
-
+var totalDeaths
 
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -28,6 +28,7 @@ Promise.all([d3.csv("joined_years_legal_expanded.csv")])
 var allYearsByCat
 function ready(data){
 	//console.log(data)
+	totalDeaths=data.length
 	allYearsByCat = catData(data)
 	var formattedYears = drawGroupData(data,"Year")
 	drawStackedChart(formattedYears[0],formattedYears[1],formattedYears[2],"#chart1","2020",600,300,"Year")
@@ -213,15 +214,15 @@ svg.append("g")
 		   if(d.data.group=="2020"){
 			   var subGroup = d3.select(this.parentNode).datum().key
 			  var subGroupCount = allYearsByCat[subGroup]
-			   return "Total "+subGroup.split("_").join(" ")+": "+numberWithCommas(subGroupCount)
+			   return "Total "+subGroup.split("_").join(" ")+": "+numberWithCommas(subGroupCount)+"("+Math.round(subGroupCount/totalDeaths*10000)/100+"%)"
 		   }
 	   })
-	   .attr("x", function(d) { return x(d.data.group); })
+	   .attr("x", function(d) { return x(d.data.group)-15; })
         .attr("y", function(d) { 
 			if(isNaN(d[1])==false){
 				var subGroupName= d3.select(this.parentNode).datum().key
 				if(subGroupName=="undetermined_intent"){
-					return y(d[1])-20
+					return y(d[1])-22
 				}else if(subGroupName=="unintentional"){
 					return y(d[1])-15
 				}else if(subGroupName=="legal_intervention"){
