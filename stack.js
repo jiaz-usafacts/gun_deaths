@@ -31,10 +31,14 @@ function ready(data){
 	totalDeaths=data.length
 	allYearsByCat = catData(data)
 	var formattedYears = drawGroupData(data,"Year")
-	drawStackedChart(formattedYears[0],formattedYears[1],formattedYears[2],"#chart1","2020",600,300,"Year")
+	drawStackedChart(formattedYears[0],formattedYears[1],formattedYears[2],"#chart1","2020",750,400,"Year")
     
 	var formattedAges = drawGroupData(data,"Single-Year Ages")	
 	drawStackedChart(formattedAges[0],formattedAges[1],formattedAges[2],"#chart2","20 years",1000,300,"Age")
+	
+    
+	var formattedAges = drawGroupData(data,"Race")	
+	drawStackedChart(formattedAges[0],formattedAges[1],formattedAges[2],"#chart3","White",500,600,"Race")
 	
 };
 
@@ -142,20 +146,16 @@ function drawYearData(data){
  	var groups = Object.keys(yearsCatCount)
 	 
 	 
+	 if(label=="Race"){
+	 	groups = ["White","Black or African American","Asian or Pacific Islander","American Indian or Alaska Native"]
+	 }
 	  var subgroups = ['intentional_self-harm','assault_male_not_at_home', 
 	 'assault_male_at_home', 'assault_female_not_at_home','assault_female_at_home',
 	   'legal_intervention','unintentional','undetermined_intent']
 
 var color = d3.scaleOrdinal()
     .domain(subgroups)
-    .range(["#000",
-"#45b0cf",
-"#46b6a3",
-"#e1b342",
-"#e5a638",
-"#db76a8",
-"#888",
-"#aaa"])
+    .range(["#000","#45b0cf","#46b6a3","#e1b342","#e5a638","#db76a8","#888","#aaa"])
 
  	var max =d3.max(Object.keys(years),function(d){
  		return years[d].length
@@ -173,8 +173,8 @@ var color = d3.scaleOrdinal()
 var stackedData = d3.stack()
     .keys(subgroups)
     (formattedArray)
-	   var p = 40
-	   var svg = d3.select(divName).append("svg").attr("width",w+p*7).attr("height",h+p*2)
+	   var p = 45
+	   var svg = d3.select(divName).append("svg").attr("width",w+p*8).attr("height",h+p*2)
      svg.append("g")
        .call(d3.axisLeft(y))
        .attr("transform", "translate("+p+"," + p + ")")
@@ -183,15 +183,20 @@ var stackedData = d3.stack()
        .attr("transform", "translate("+p+"," + (h+p) + ")")
        .call(d3.axisBottom(x)
        .tickFormat(function(d, i){ 
-		   var years = parseInt(d.replace(" years",""))
-		   if(years%5==0){
-		   	return years
+		   if(label=="Age"){
+			   var years = parseInt(d.replace(" years",""))
+			   if(years%5==0){
+			   	return years
+			   }
+		   }else{
+		   	return d
 		   }
+		   
 	   })
    	);
 	   
 	  var tooltip = d3.select("body")
-	     .append("div")
+	     .append("div").style("position","fixed")
 	     .style("opacity", 0)
 	     .attr("class", "tooltip")
 	     .style("background-color", "white")
@@ -217,7 +222,7 @@ svg.append("g")
 			   return "Total "+subGroup.split("_").join(" ")+": "+numberWithCommas(subGroupCount)+"("+Math.round(subGroupCount/totalDeaths*10000)/100+"%)"
 		   }
 	   })
-	   .attr("x", function(d) { return x(d.data.group)-15; })
+	   .attr("x", function(d) { return x(d.data.group); })
         .attr("y", function(d) { 
 			if(isNaN(d[1])==false){
 				var subGroupName= d3.select(this.parentNode).datum().key
