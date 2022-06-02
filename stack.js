@@ -155,7 +155,7 @@ function drawYearData(data){
 
 var color = d3.scaleOrdinal()
     .domain(subgroups)
-    .range(["#000","#45b0cf","#46b6a3","#e1b342","#e5a638","#db76a8","#888","#aaa"])
+    .range(["#000","#e1b342","#e5a638","#45b0cf","#46b6a3","#cb5a4c","#888","#aaa"])
 
  	var max =d3.max(Object.keys(years),function(d){
  		return years[d].length
@@ -266,6 +266,7 @@ svg.append("g")
 		})
         .attr("width",x.bandwidth())
 	   .attr("stroke","#fff")
+	   .attr("stroke-width",.5)
 	   .attr("cursor","pointer")
        .attr("transform", "translate("+p+"," + p + ")")
 		.on("mouseover", function(e,d){
