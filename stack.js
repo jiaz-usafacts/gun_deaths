@@ -148,8 +148,8 @@ var color = d3.scaleOrdinal()
     .range(["#000",
 "#45b0cf",
 "#46b6a3",
-"#55a470",
-"#4bb956",
+"#e1b342",
+"#e5a638",
 "#db76a8",
 "#888",
 "#aaa"])
@@ -217,11 +217,14 @@ svg.append("g")
 			if(isNaN(d[1])==false){
 				var subGroupName= d3.select(this.parentNode).datum().key
 				if(subGroupName=="undetermined_intent"){
-					return y(d[1])-15
+					return y(d[1])-20
 				}else if(subGroupName=="unintentional"){
-					return y(d[1])-10
+					return y(d[1])-15
 				}else if(subGroupName=="legal_intervention"){
+					return y(d[1])-10
+				}else if(subGroupName=="assault_female_at_home"){
 					return y(d[1])-5
+					
 				}
 				return y(d[1]); 
 			}
@@ -265,8 +268,8 @@ svg.append("g")
 	     tooltip
 	         .html("<strong>" + subgroupName.split("_").join(" ") + "</strong><br>" 
 				+ numberWithCommas(subgroupValue)+" Deaths<br>"
-				+ percentValue+"% of all Deaths in "+group)
-	         .style("opacity", 1)
+				+ percentValue+"% of all Deaths for "+group.replace(" years"," year olds"))
+	         	.style("opacity", 1)
 		})      //
        .on("mousemove", function(e,d){
 		   var x = event.clientX+20;     // Get the horizontal coordinate
